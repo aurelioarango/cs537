@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <unistd.h>
-#include <sys/types.h> 
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
@@ -29,7 +29,21 @@ void *cliSvr(void *arg)
         return NULL;
     }
 
-    printf("Server:: Here is the message: %s\n",buffer);
+    //Parse String for GET HEAD or POST
+
+    //if GET WE load file from machine and transmit it
+      // Read the file name that we will look
+      // if the file is found transmit it
+      // Else NO file found send ERROR
+
+    //IF HEAD we only send the HEAD of the file
+
+
+    //IF IS POST then we save the file
+
+    
+    /*
+    printf("Server:: Here is the message: %s\n",buffer);*/
 
     /* Send response back to the client */
     n = write(sockfd,"I got your message",18);
@@ -41,7 +55,7 @@ void *cliSvr(void *arg)
     }
 
     close(sockfd);
- 
+
     return NULL;
 
 }
@@ -62,8 +76,8 @@ int main(int argc, char *argv[])
 
      /* Open a TCP socket connection */
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
-     if (sockfd < 0) { 
-        fprintf(stderr, "Error opening socket, errno = %d (%s) \n", 
+     if (sockfd < 0) {
+        fprintf(stderr, "Error opening socket, errno = %d (%s) \n",
                 errno, strerror(errno));
         return -1;
      }
@@ -85,8 +99,8 @@ int main(int argc, char *argv[])
      /* Wait for incoming socket connection requests */
      while (1) {
          clilen = sizeof(cli_addr);
-         clisockfd = accept(sockfd, 
-                            (struct sockaddr *) &cli_addr, 
+         clisockfd = accept(sockfd,
+                            (struct sockaddr *) &cli_addr,
                             &clilen);
 
          if (clisockfd < 0) {
@@ -94,12 +108,12 @@ int main(int argc, char *argv[])
                      errno, strerror(errno));
              break;
          }
-      
-         /* Create thread for client requests/responses */ 
+
+         /* Create thread for client requests/responses */
          pthread_create(&tid, NULL, (void *)&cliSvr, (void *)&clisockfd);
      }
 
      close(sockfd);
 
-     return 0; 
+     return 0;
 }
