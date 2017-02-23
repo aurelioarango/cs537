@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -52,22 +53,83 @@ void *cliSvr(void *arg)
 
     int ws_pos = buff.find(" ");
     string command = buff.substr(0,ws_pos);
-
+    string response("");
     if(command=="GET")
     {
-      cout<<"HTTP/1.0 200 OK GET"<<endl;
+      response ="HTTP/1.0 200 OK GET\n";
+
+      fstream file;
+      file.open ("header", fstream::in );
+
+      string out;
+      while(!file.eof())//reading file 
+      {
+        getline(file,out);//read line and then send out
+        out.append("\n");
+        send(fd,out.c_str(), out.length(),0);
+      }
+
+      file.close();
+      out="";
+      //cout <<"From client(try block): " <<input << endl;
+      //look for the file
+      if(command.find("index.html") )
+      {
+        file.open ("index.html", fstream::in );
+      }
+      else
+      {
+        unsigned first = command.find("/");
+        //unsigned second = input.find("/",first+1);
+        string filename =command.substr(first+1,first+1);//trying to open a file
+
+        file.open(filename.c_str(),fstream::in);
+      }
+
+
+      while(!file.eof())//reading file
+      {
+        getline(file,out);//read line and then send out
+        out.append("\n");
+        send(fd,out.c_str(), out.length(),0);
+      }
+      file.close();
+      close(fd);//closing connection
+
+
     }
     else if(command == "POST")
     {
-      cout<<"POST COMMAND"<<endl;
+      response ="POST COMMAND\n";
     }
     else if(command == "HEAD")
     {
-      cout<<"HTTP/1.0 200 OK HEAD"<<endl;
+      response ="HTTP/1.0 200 OK\r\n";
+      //open file rensonse
+      //read file and send it
+      //
+
+      write(sockfd,response.c_str(),255);
+      fstream head;
+      head.open("header",fstream::in);
+
+      if(head.is_open())
+      {
+          while(!head.eof())
+          {
+            getline(head,response);
+            response.append("\n");
+          }
+          write(sockfd,response.c_str(),255);
+      }
+      //closing socket
+      close(sockfd);
+      //closing file reader
+      head.close();
     }
     else
     {
-      cout<<"HTTP/1.0 400"<<endl;
+      response ="HTTP/1.0 400\n";
     }
 
 
@@ -86,7 +148,7 @@ void *cliSvr(void *arg)
     printf("Server:: Here is the message: %s\n",buffer);*/
 
     /* Send response back to the client */
-    n = write(sockfd,command.c_str(),18);
+
     if (n < 0)  {
         fprintf(stderr, "Error writing to socket, errno = %d (%s)\n",
                 errno, strerror(errno));
