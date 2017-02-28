@@ -53,36 +53,36 @@ void *cliSvr(void *arg)
 
     int ws_pos = buff.find(" ");
     string command = buff.substr(0,ws_pos);
-    string response("");
+    string response;
+    response ="";
     if(command=="GET")
     {
       response ="HTTP/1.0 200 OK GET\n";
-
+      write(sockfd,response.c_str(),response.length());
       fstream file;
       file.open ("header", fstream::in );
 
       string out;
-      while(!file.eof())//reading file 
+      while(!file.eof())//reading file
       {
         getline(file,out);//read line and then send out
         out.append("\n");
-        send(fd,out.c_str(), out.length(),0);
+        write(sockfd,out.c_str(), out.length());
       }
 
       file.close();
       out="";
-      //cout <<"From client(try block): " <<input << endl;
-      //look for the file
-      if(command.find("index.html") )
+
+      //look for the file or default index
+      if(buff.find("/index.html") || buff.find(" / "))
       {
         file.open ("index.html", fstream::in );
       }
       else
       {
-        unsigned first = command.find("/");
+        unsigned first = buff.find("/");
         //unsigned second = input.find("/",first+1);
-        string filename =command.substr(first+1,first+1);//trying to open a file
-
+        string filename =buff.substr(first+1,first+1);//trying to open a file
         file.open(filename.c_str(),fstream::in);
       }
 
@@ -91,16 +91,46 @@ void *cliSvr(void *arg)
       {
         getline(file,out);//read line and then send out
         out.append("\n");
-        send(fd,out.c_str(), out.length(),0);
+        write(sockfd,out.c_str(), out.length());
       }
       file.close();
-      close(fd);//closing connection
+      close(sockfd);//closing connection
 
 
     }
     else if(command == "POST")
     {
-      response ="POST COMMAND\n";
+      //response ="POST COMMAND\n";
+
+      response="Updating...\n";
+      unsigned pos = buff.find(" ");
+      unsigned posend = buff.find("\n");
+      string file_name ="copy";
+      file_name += buff.substr(pos+1,posend-3);//file to be save as
+
+      ofstream file;
+      string file_contents="start";
+      file.open(file_name.c_str());//opening file
+      //read and write
+      char  read_buffer[256];
+
+      while (file_contents.length() > 1)
+      {
+
+        file_contents="";//clear entry
+        read(sockfd, read_buffer, 255);//read line
+        string str(read_buffer);
+
+
+        file_contents.append(str);//store in file contents
+        str[0] ='\0';//setting to 0
+        file<<file_contents;//saving to file
+      }
+      cout <<"DONE"<<endl;
+      file.close();//closing file
+      write(sockfd,response.c_str(), response.length());
+      close(sockfd);
+
     }
     else if(command == "HEAD")
     {
@@ -109,7 +139,7 @@ void *cliSvr(void *arg)
       //read file and send it
       //
 
-      write(sockfd,response.c_str(),255);
+      write(sockfd,response.c_str(),response.length());
       fstream head;
       head.open("header",fstream::in);
 
@@ -120,7 +150,7 @@ void *cliSvr(void *arg)
             getline(head,response);
             response.append("\n");
           }
-          write(sockfd,response.c_str(),255);
+          write(sockfd,response.c_str(),response.length());
       }
       //closing socket
       close(sockfd);
