@@ -15,19 +15,6 @@
 
 using namespace std;
 
-void processHEAD()
-{
-
-}
-void processPOST()
-{
-
-}
-void ProcessGET()
-{
-
-}
-
 void *cliSvr(void *arg)
 {
 
@@ -37,9 +24,14 @@ void *cliSvr(void *arg)
     bzero(buffer,256);
 
     sockfd = *(int *)arg;
-
+    int keep_alive=1;
     /* Wait for request from client */
+    while(keep_alive)
+    {
+
+
     n = read(sockfd,buffer,255);
+
     if (n < 0) {
         fprintf(stderr, "Error reading from socket, errno = %d (%s)\n",
                 errno, strerror(errno));
@@ -53,115 +45,170 @@ void *cliSvr(void *arg)
 
     int ws_pos = buff.find(" ");
     string command = buff.substr(0,ws_pos);
+    cout <<buff<<endl;
+    keep_alive = buff.find("keep-alive");
     string response;
     response ="";
-    if(command=="GET")
+
+    if(buff.find("HTTP/1.0") != -1)
     {
-      response ="HTTP/1.0 200 OK GET\n";
-      write(sockfd,response.c_str(),response.length());
-      fstream file;
-      file.open ("header", fstream::in );
 
-      string out;
-      while(!file.eof())//reading file
+      //if the command is get, post,
+      if(command=="GET")
       {
-        getline(file,out);//read line and then send out
-        out.append("\n");
-        write(sockfd,out.c_str(), out.length());
+        //lets find dash
+        int slash_pos = buff.find("/");
+        int http_pos =  buff.find("HTTP/1.0")+4;
+        fstream file;
+        if (slash_pos != http_pos)
+        {
+          cout << slash_pos << " " << http_pos<<endl;
+          response ="HTTP/1.0 200 OK GET\n";
+          write(sockfd,response.c_str(),response.length());
+
+          file.open ("header", fstream::in );
+
+          string out;
+          while(!file.eof())//reading file
+          {
+            getline(file,out);
+            out.append("\n");
+            cout<<"sending: "<<out<<endl;
+            write(sockfd,out.c_str(),out.length());
+            out ="";
+          }
+
+          file.close();
+          out="\r\n";
+
+          //look for the file or default index
+          if(buff.find("/index.html") || buff.find(" / "))
+          {
+            file.open ("index.html", fstream::in );
+          }
+          else
+          {
+            unsigned first = buff.find("/");
+            //unsigned second = input.find("/",first+1);
+            string filename =buff.substr(first+1,first+1);//trying to open a file
+            file.open(filename.c_str(),fstream::in);
+          }
+          if(file!=NULL)
+          {
+
+          }
+          write(sockfd,out.c_str(), out.length());
+          out="";
+          while(!file.eof())//reading file
+          {
+            getline(file,out);//read line and then send out
+            out.append("\n");
+            write(sockfd,out.c_str(), out.length());
+            out="";
+          }
+          response = "\r\n\r\n";
+          write(sockfd, response.c_str(),response.length());
+          file.close();
+          if(keep_alive < 0)
+          {
+            close(sockfd);//closing connection
+          }
+
+
+        }
+        else
+        {
+          response = "HTTP/1.0 400\r\n\r\n";
+          write(sockfd, response.c_str(),response.length());
+          close(sockfd);//closing connection
+        }
+
+
       }
-
-      file.close();
-      out="";
-
-      //look for the file or default index
-      if(buff.find("/index.html") || buff.find(" / "))
+      else if(command == "POST")
       {
-        file.open ("index.html", fstream::in );
+        //response ="POST COMMAND\n";
+
+
+        unsigned pos = buff.find("/");
+        unsigned posend = buff.find(".html");
+
+        string file_name ="copy_";
+        file_name += buff.substr(pos+1,posend);//file to be save as
+
+
+
+        write(sockfd,file_name.c_str(), file_name.length());
+
+
+        FILE * pfile;
+        pfile = fopen(file_name.c_str(), "w");
+
+        if(pfile != NULL)
+        {
+          read(sockfd,buffer,255);
+          while(n>0)
+          {
+            fputs(buffer, pfile);
+            buff = buffer;
+            //cout <<"buff n= "<< n<< " "<<buff<<endl;
+            bzero(buffer,256);
+            n = read(sockfd,buffer,255);
+            //cout <<"buff n= "<< n<< " "<<buff<<endl;
+          }
+        }
+        fclose(pfile);
+
+
+
+        //response = "\r\n\r\n";
+        //write(sockfd,response.c_str(), response.length());
+        //cout <<"Closing "<<endl;
+        close(sockfd);
+
+      }
+      else if(command == "HEAD")
+      {
+        response ="HTTP/1.0 200 OK\r\n";
+        //open file rensonse
+        //read file and send it
+        //
+
+        write(sockfd,response.c_str(),response.length());
+        fstream head;
+        head.open("header",fstream::in);
+
+        if(head.is_open())
+        {
+            while(!head.eof())
+            {
+              getline(head,response);
+              response.append("\n");
+              cout<<"sending: "<<response<<endl;
+              write(sockfd,response.c_str(),response.length());
+              response ="";
+            }
+        }
+        //closing socket
+        response = "\r\n\r\n";
+        write(sockfd,response.c_str(),response.length() );
+        close(sockfd);
+        //closing file reader
+        head.close();
       }
       else
       {
-        unsigned first = buff.find("/");
-        //unsigned second = input.find("/",first+1);
-        string filename =buff.substr(first+1,first+1);//trying to open a file
-        file.open(filename.c_str(),fstream::in);
+        response ="HTTP/1.0 404\r\n\r\n";
+        write(sockfd,response.c_str(),response.length() );
+        //close(sockfd);
       }
-
-
-      while(!file.eof())//reading file
-      {
-        getline(file,out);//read line and then send out
-        out.append("\n");
-        write(sockfd,out.c_str(), out.length());
-      }
-      file.close();
-      close(sockfd);//closing connection
-
-
-    }
-    else if(command == "POST")
-    {
-      //response ="POST COMMAND\n";
-
-      response="Updating...\n";
-      unsigned pos = buff.find(" ");
-      unsigned posend = buff.find("\n");
-      string file_name ="copy";
-      file_name += buff.substr(pos+1,posend-3);//file to be save as
-
-      ofstream file;
-      string file_contents="start";
-      file.open(file_name.c_str());//opening file
-      //read and write
-      char  read_buffer[256];
-
-      while (file_contents.length() > 1)
-      {
-
-        file_contents="";//clear entry
-        read(sockfd, read_buffer, 255);//read line
-        string str(read_buffer);
-
-
-        file_contents.append(str);//store in file contents
-        str[0] ='\0';//setting to 0
-        file<<file_contents;//saving to file
-      }
-      cout <<"DONE"<<endl;
-      file.close();//closing file
-      write(sockfd,response.c_str(), response.length());
-      close(sockfd);
-
-    }
-    else if(command == "HEAD")
-    {
-      response ="HTTP/1.0 200 OK\r\n";
-      //open file rensonse
-      //read file and send it
-      //
-
-      write(sockfd,response.c_str(),response.length());
-      fstream head;
-      head.open("header",fstream::in);
-
-      if(head.is_open())
-      {
-          while(!head.eof())
-          {
-            getline(head,response);
-            response.append("\n");
-          }
-          write(sockfd,response.c_str(),response.length());
-      }
-      //closing socket
-      close(sockfd);
-      //closing file reader
-      head.close();
     }
     else
     {
-      response ="HTTP/1.0 400\n";
+      response = "HTTP/1.0 400\r\n\r\n";
+      write(sockfd,response.c_str(),response.length() );
+      //close(sockfd);
     }
-
 
     //if GET WE load file from machine and transmit it
       // Read the file name that we will look
@@ -186,8 +233,9 @@ void *cliSvr(void *arg)
         return NULL;
     }
 
-    close(sockfd);
 
+}
+close(sockfd);
     return NULL;
 
 }
