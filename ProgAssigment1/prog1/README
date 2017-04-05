@@ -1,0 +1,8 @@
+
+To compile the server type:
+
+g++ -o tcpServer.out tcpServer.cpp -lpthread
+
+To compile the client type:
+
+g++ -o tcpClient.out tcpClient.cpp
