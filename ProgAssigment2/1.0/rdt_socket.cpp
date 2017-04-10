@@ -3,10 +3,17 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <iostream>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 
 using namespace std;
-
-int rdt_socket(int address_family, int type, int protocol);
+//for errors
+extern int error(const char * f,...);
 
 int rdt_socket(int address_family, int type, int protocol)
 {

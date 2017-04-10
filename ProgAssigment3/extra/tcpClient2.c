@@ -73,8 +73,10 @@ int main(int argc, char *argv[])
 
     /* Make the client request to the server */
     pkt.pktsize = strlen(msg);
+    //pkt.cksval = 12;//change value of packet size
     pkt.cksval = cksum(msg, pkt.pktsize);
-
+    //msg = "I changed here";
+    //can corrupt the packet payload[]<---
     bzero((void *)&pkt.payload[0], 512);
     memcpy((void *)&pkt.payload[0], msg, pkt.pktsize);
 

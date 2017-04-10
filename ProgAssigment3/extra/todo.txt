@@ -1,0 +1,37 @@
+
+//notes for packet
+  struct packet {
+          uint16_t cksum; /* Ack and Data */
+          uint16_t len;   /* Ack and Data */
+          uint32_t ackno; /* Ack and Data */
+          uint32_t seqno; /* Data only */
+          char data[500]; /* Data only; Not always 500 bytes, can be less */
+        };
+
+        typedef struct packet packet_t;
+//functions to implement
+
+The rdt_socket() function is used to create an end point for communications.
+     int rdt_socket(int address_family,
+            	    int type,
+             	    int protocol)
+The rdt_bind() function is used to associate a local address with a socket
+      int rdt_bind(int socket_descriptor,
+          	   const struct sockaddr *local_address,
+          	   socklen_t address_length)
+The rdt_recv() function is used to receive data through an unconnected socket.
+      int rdt_recv(int socket_descriptor,
+              	   char *buffer,
+                   int buffer_length,
+                   int flags,
+                   struct sockaddr *from_address,
+                   int *address_length)
+The rdt_send() function is used to send data through a connected or unconnected socket
+      int rdt_sendto(int socket_descriptor,
+            	     char *buffer,
+            	     int buffer_length,
+            	     int flags,
+           	     struct sockaddr *destination_address,
+            	     int address_length)
+The rdt_close() function closes a descriptor, fildes
+           int rdt_close(int fildes);

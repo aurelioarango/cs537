@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
         close(sockfd);
         return -1;
     }
-        
+
     /* Wait for response from server (get time) */
     if (recvfrom(sockfd, (void *)&rspHdr, sizeof(rspHdr), 0, (struct sockaddr *)&saddr, (socklen_t *)&clen) == -1) {
         fprintf(stderr, "Error receiving udp pkt from server, errno = %d (%s) \n",
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
     scsRsp.hdr.cmd = 3;
     scsRsp.hdr.pldlen = strlen(pwd);
     strncpy(scsRsp.passwd, pwd, strlen(pwd));
-  
+
     /* Send the password response */
     if (sendto(sockfd, (void *)&scsRsp, sizeof(SCS_RSP), 0,(struct sockaddr *) &saddr, sizeof(saddr)) == -1) {
         fprintf(stderr, "Error sending udp pkt to server, errno = %d (%s) \n",
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
         printf("Password was rejected by server \n");
     }
 
-    
+
     close(sockfd);
 
     return 0;

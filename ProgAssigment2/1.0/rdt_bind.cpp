@@ -3,11 +3,9 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <iostream>
+#include <unistd.h>
 
 using namespace std;
-
-int rdt_bind(int socket_descriptor, const struct sockaddr * local_address,
-            socklen_t address_length);
 
 int rdt_bind(int socket_descriptor, const struct sockaddr * local_address,
             socklen_t address_length)
@@ -15,11 +13,10 @@ int rdt_bind(int socket_descriptor, const struct sockaddr * local_address,
 
   if ( bind(socket_descriptor, local_address, sizeof(address_length)) == -1 )
   {
-      fprintf(stderr, "%s: unable to bind to port '%s', errno = %d (%s) \n", argv[0],
-              argv[2], errno, strerror(errno));
+      cout << "Unable to bind to port '%s', errno = %d (%s) \n";
       close(socket_descriptor);
       return -1;
   }
 
-
+return socket_descriptor;
 }

@@ -102,8 +102,8 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Error sending to client, errno = %d (%s) \n",
             errno, strerror(errno));
         }
-        
- 
+
+
     }
 
     return 0;
