@@ -27,7 +27,17 @@ void check_args(int argc)
 
   if(argc != 4)
   {
-    cout << "Usage: %s <ip_address> <port> <data> "<<endl;
+    cout << "Usage: <ip_address> <port> <data> "<<endl;
+    exit(0);
+  }
+
+}
+void check_serv_args(int argc)
+{
+
+  if(argc != 3)
+  {
+    cout << "Usage: <ip_address> <port>"<<endl;
     exit(0);
   }
 

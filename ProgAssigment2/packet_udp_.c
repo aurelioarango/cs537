@@ -24,11 +24,13 @@ void SendMessage ( char * message, int length )
   packet.sequence = sequence++;
   packet.length = sizeof(packet.data);
   packet.more = true;
+  //copy message into packet.data and use packet size
   memcpy ( packet.data, message, sizeof(packet.data) );
   message += sizeof(packet.data);
   length -= sizeof(packet.data);
   SendPacket ( &packet );
  }
+
  packet.sequence = sequence;
  packet.length = length;
  packet.more = false;
@@ -152,7 +154,7 @@ main()
       char buf[MAXBUFLEN];
       mypacket mp;
       int tempseq_no;
-      
+
       tempseq_no = 0;
 
       if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
@@ -163,16 +165,16 @@ main()
 
       my_addr.sin_family = AF_INET;
       my_addr.sin_port = htons(MYPORT);
-      
+
       my_addr.sin_addr.s_addr = INADDR_ANY;
       bzero(&(my_addr.sin_zero), 8);
-      
+
       if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1)
       {
             perror("bind");
             exit(1);
       }
-      
+
       while(1)
       {
       addr_len = sizeof(struct sockaddr);
@@ -181,7 +183,7 @@ main()
             perror("recvfrom");
             exit(1);
       }
-      
+
       if (mypacket.seq_no < tempseq_no)
       {
       printf("Got packet from %s\n",inet_ntoa(their_addr.sin_addr));
@@ -196,6 +198,6 @@ main()
       {
       printf("ERROR: The sequence number of the recieved packet is too small")
       }
-      
+
       close(sockfd);
 }
