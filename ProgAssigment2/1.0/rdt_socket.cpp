@@ -13,7 +13,7 @@
 
 using namespace std;
 //for errors
-extern int error(const char * f,...);
+extern int error(const char * format,...);
 
 int rdt_socket(int address_family, int type, int protocol)
 {
@@ -22,9 +22,10 @@ int rdt_socket(int address_family, int type, int protocol)
   socket_fd=socket(address_family, type, protocol);
   if(socket_fd< 0)
   {
-    cout << "Can't Create Socket: "<< strerror(errno)<<endl;
+    error("Can't create socket.");
+    //cout << "Can't Create Socket: "<< strerror(errno)<<endl;
     return -1;
   }
 
-  return socket_fd
+  return socket_fd;
 }

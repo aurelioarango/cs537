@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <stdlib.h>
+#include <cstring>
+#include <stdio.h>
 using namespace std;
 //use error handling
 extern int error(const char * format,...);
@@ -14,9 +16,9 @@ struct packet {
         uint32_t ackno; /* Ack and Data */
         uint32_t seqno; /* Data only */
         char data[500]; /* Data only; Not always 500 bytes, can be less */
-};
-
-typedef struct packet packet_t;
+} packet_t;
+//defining the struct
+//typedef struct packet packet_t;
 
 int rdt_sendto(int socket_descriptor,
               char *buffer,
@@ -26,22 +28,24 @@ int rdt_sendto(int socket_descriptor,
               int address_length)
 {
 
-  int ck_sum =cksum(&buffer,strlen(buffer));
+  int ck_sum =cksum((unsigned char *)buffer,strlen(buffer));
   packet_t.seqno = 0;
   packet_t.ackno = 0;
   int len = address_length;
   //Break data into packets and send it over UDP use a foorloop to keep sending the data.
    while ( len > sizeof(packet_t.data) )
    {
-     packet_t.seqno++;
-     packet_t.ackno++;
-     packet_t.len = sizeof(packet.data);;
+
+     packet_t.len = sizeof(packet_t.data);
      packet_t.cksum =ck_sum;
      //copy message into packet.data and use packet size
      memcpy ( packet_t.data, buffer, sizeof(packet_t.data) );
      //traverse the data message
-     buffer += sizeof(packet.data);
-     len -= sizeof(packet.data);
+     //packet_t.seqno++;
+     //packet_t.ackno++;
+     //increate the pointer by the size of data copy from it
+     buffer += sizeof(packet_t.data);
+     len -= sizeof(packet_t.data);
 
 
      //send the data
@@ -49,11 +53,13 @@ int rdt_sendto(int socket_descriptor,
          cout << "Error sending to client, errno = %d (%s) \n" <<endl;
          return -1;
      }
+     packet_t.seqno++;
+     packet_t.ackno++;
    }
    //send the last bit of data
-   packet_t.seqno++;
-   packet_t.ackno++;
-   packet_t.len = sizeof(packet.data);;
+   //packet_t.seqno++;
+   //packet_t.ackno++;
+   packet_t.len = sizeof(packet_t.data);;
    packet_t.cksum =ck_sum;
    memcpy ( packet_t.data, buffer, sizeof(packet_t.data) );
    if (sendto(socket_descriptor, (void *)&  packet_t, sizeof(packet_t), flags, (struct sockaddr *)&destination_address, address_length) == -1) {

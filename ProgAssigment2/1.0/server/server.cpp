@@ -73,8 +73,8 @@ int main(int argc, char *argv[])
   {
     rdt_recv(socket_udt,data,sizeof(data),
       0,(struct sockaddr *) r_addr, sizeof(r_addr));
-      
-      rdt_sendto(socket_udt, data, sizeof(data),
+
+    rdt_sendto(socket_udt, data, sizeof(data),
       0, (struct sockaddr *) r_addr ,sizeof(r_addr));
   }
 

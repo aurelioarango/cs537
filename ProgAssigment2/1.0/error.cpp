@@ -43,7 +43,7 @@ void check_serv_args(int argc)
 
 }
 
-void check_server(hostent * server)
+void check_server(struct hostent * server)
 {
   if (server == NULL) {
         fprintf(stderr,"Error getting host, h_errno = %d (%s) \n",
