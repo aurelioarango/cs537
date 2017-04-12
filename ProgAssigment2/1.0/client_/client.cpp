@@ -32,15 +32,15 @@ extern int rdt_close(int fildes);
 //validate arguments
 extern void check_args(int argc);
 
-extern void check_server(hostent * server);
+extern void check_server(struct hostent * server);
 
 int main(int argc, char *argv[])
 {
-  char * data;//to get the data
+  char data[1000];//to get the data
   char * port;//port number
   char * ip;//ip address
   int socket_udt;
-  int bind;
+  //int bind;
   struct sockaddr_in ser_addr;
   struct hostent * server;
 
@@ -52,7 +52,8 @@ int main(int argc, char *argv[])
   //port
   port = argv[2];
   //get data
-  data = argv[3];
+  //data = argv[3];
+  memcpy(data,argv[3],sizeof(data));
   //get host name
   server = gethostbyname(argv[1]);
   //check if server name is not empty
@@ -61,8 +62,8 @@ int main(int argc, char *argv[])
 
   memset((void *)&ser_addr, 0, sizeof(ser_addr));
   ser_addr.sin_family = AF_INET;
-  ser_addr.sin_addr.s_addr = inet_addr(argv[1]);
-  ser_addr.sin_port = htons(atoi(argv[2]));
+  ser_addr.sin_addr.s_addr = inet_addr(ip);
+  ser_addr.sin_port = htons(atoi(port));
 
   /* Send dummy command to server to get time
    * so server knows who to send time */
@@ -84,11 +85,9 @@ int main(int argc, char *argv[])
   socket_udt = rdt_socket(AF_INET, SOCK_DGRAM, 0);
   //bind to port
   //bind = rdt_bind(socket_udt, )
-  rdt_sendto(socket_udt, data, sizeof(data),
-    0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
+  rdt_sendto(socket_udt, data, sizeof(data),0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
   //int ser_size = sizeof(ser_addr);
-  rdt_recv(socket_udt,data,sizeof(data),
-    0,(struct sockaddr *) &ser_addr,sizeof(ser_addr));
+  rdt_recv(socket_udt,data,sizeof(data),0,(struct sockaddr *) &ser_addr,sizeof(ser_addr));
   //closing socket
   rdt_close(socket_udt);
 }

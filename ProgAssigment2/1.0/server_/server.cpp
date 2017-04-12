@@ -2,14 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
+#include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <netinet/in.h>
-#include <time.h>
-#include <unistd.h>
+#include <arpa/inet.h>
+#include <iostream>
+#include <cstdio>
 
-
+using namespace std;
 //open socket
 extern int rdt_socket(int address_family, int type, int protocol);
 //bind socket
@@ -28,54 +30,60 @@ extern int rdt_recv(int socket_descriptor,
              int buffer_length,
              int flags,
              struct sockaddr *from_address,
-             int *address_length);
+             int address_length);
 //rdt close
 extern int rdt_close(int fildes);
 //validate arguments
 extern void check_args(int argc);
 
-extern  void check_serv_args(int argc)(hostent * server)
+extern  void check_serv_args(int argc);
+
+extern  void check_server(struct hostent * server);
 
 int main(int argc, char *argv[])
 {
-  char * data;//to get the data
+  char data[1000];//to get the data
   char * port;//port number
-  char * ip;//ip address
+  //char * ip;//ip address
   int socket_udt;
-  int bind;
+  //int bind;
   struct sockaddr_in ser_addr;
-  struct hostent * server;
+  //struct hostent * server;
 
   //check for the number of arguments
-  check_args(argc);
+  check_serv_args(argc);
   //ip address
-  ip = argv[1];
+  //ip = argv[1];
   //port
-  port = argv[2];
+  port = argv[1];
 
   //get host name
-  server = gethostbyname(argv[1]);
+
+  //server = gethostbyname(argv[1]);
+  //from_address
   //check if server name is not empty
-  check_serv_args(server);
+  //check_server(server);
 
   socket_udt = rdt_socket(AF_INET, SOCK_DGRAM, 0);
 
+  //set data to 0
   memset((void *)&ser_addr, 0, sizeof(ser_addr));
   ser_addr.sin_family = AF_INET;
-  ser_addr.sin_addr.s_addr = inet_addr(argv[1]);
-  ser_addr.sin_port = htons(atoi(argv[2]));
-
+  ser_addr.sin_addr.s_addr = INADDR_ANY;//inet_addr(ip);
+  ser_addr.sin_port = htons(atoi(port));
+  //cout << "UDT port "<< port <<endl;
+  //cout <<"UDT port "<<ser_addr.sin_port <<endl;
   //bind service
   rdt_bind(socket_udt,(struct sockaddr *) &ser_addr,sizeof(ser_addr));
 
-  while (1) {
+  while (1)
   /* Waiting for a join request from a client */
   {
     rdt_recv(socket_udt,data,sizeof(data),
-      0,(struct sockaddr *) r_addr, sizeof(r_addr));
+      0,(struct sockaddr *) &ser_addr, sizeof(ser_addr));
 
-    rdt_sendto(socket_udt, data, sizeof(data),
-      0, (struct sockaddr *) r_addr ,sizeof(r_addr));
+      rdt_sendto(socket_udt, data, sizeof(data),
+      0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
   }
 
 
