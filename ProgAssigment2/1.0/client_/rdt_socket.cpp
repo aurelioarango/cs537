@@ -20,7 +20,7 @@ int rdt_socket(int address_family, int type, int protocol)
   int socket_fd;
 
   socket_fd=socket(address_family, type, protocol);
-  if(socket_fd< 0)
+  if(socket_fd == -1)
   {
     error("Can't create socket.");
     //cout << "Can't Create Socket: "<< strerror(errno)<<endl;

@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
   //from_address
   //check if server name is not empty
   //check_server(server);
-
+  cout <<"port " <<port << endl;
   socket_udt = rdt_socket(AF_INET, SOCK_DGRAM, 0);
 
   //set data to 0
@@ -82,8 +82,8 @@ int main(int argc, char *argv[])
     rdt_recv(socket_udt,data,sizeof(data),
       0,(struct sockaddr *) &ser_addr, sizeof(ser_addr));
 
-      rdt_sendto(socket_udt, data, sizeof(data),
-      0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
+      //rdt_sendto(socket_udt, data, sizeof(data),
+      //0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
   }
 
 

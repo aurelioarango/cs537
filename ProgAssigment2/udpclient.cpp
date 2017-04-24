@@ -3,7 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+
     memset((void *)&saddr, 0, sizeof(saddr));
     saddr.sin_family = AF_INET;
     saddr.sin_addr.s_addr = inet_addr(argv[1]);
@@ -63,26 +64,28 @@ int main(int argc, char *argv[])
     reqHdr.cmd = 1;
     reqHdr.pldlen = 0;
 
-    if (sendto(sockfd, (void *)&reqHdr, sizeof(SCS_HDR), 0,(struct sockaddr *) &saddr, sizeof(saddr)) == -1) {
+    /*if (sendto(sockfd, (void *)&reqHdr, sizeof(SCS_HDR), 0,(struct sockaddr *) &saddr, sizeof(saddr)) == -1) {
         fprintf(stderr, "Error sending udp pkt to server, errno = %d (%s) \n", errno, strerror(errno));
         close(sockfd);
         return -1;
-    }
+    }*/
 
     /* Wait for response from server (get time) */
-    if (recvfrom(sockfd, (void *)&rspHdr, sizeof(rspHdr), 0, (struct sockaddr *)&saddr, (socklen_t *)&clen) == -1) {
+  /*  if (recvfrom(sockfd, (void *)&rspHdr, sizeof(rspHdr), 0, (struct sockaddr *)&saddr, (socklen_t *)&clen) == -1) {
         fprintf(stderr, "Error receiving udp pkt from server, errno = %d (%s) \n",
                 errno, strerror(errno));
         close(sockfd);
         return -1;
-    }
+    }*/
 
-    printf("rspHdr.cmd = %d \n", rspHdr.cmd);
-    printf("rspHdr.pldlen = %d \n", rspHdr.pldlen);
+    //printf("rspHdr.cmd = %d \n", rspHdr.cmd);
+    //printf("rspHdr.pldlen = %d \n", rspHdr.pldlen);
 
-    scsRsp.hdr.cmd = 3;
-    scsRsp.hdr.pldlen = strlen(pwd);
-    strncpy(scsRsp.passwd, pwd, strlen(pwd));
+    //scsRsp.hdr.cmd = 3;
+    //scsRsp.hdr.pldlen = strlen(pwd);
+    //printf("  %d\n", scsRsp.hdr.pldle);
+    memset(scsRsp.passwd, 0, sizeof(scsRsp.passwd));
+    memcpy(scsRsp.passwd, pwd, strlen(pwd));
 
     /* Send the password response */
     if (sendto(sockfd, (void *)&scsRsp, sizeof(SCS_RSP), 0,(struct sockaddr *) &saddr, sizeof(saddr)) == -1) {
@@ -91,7 +94,7 @@ int main(int argc, char *argv[])
         close(sockfd);
         return -1;
     }
-
+    printf("pass client %s %s \n",scsRsp.passwd, pwd);
     /* Check to see if password was accepted */
     if (recvfrom(sockfd, (void *)&rspHdr, sizeof(SCS_HDR), 0, (struct sockaddr *)&saddr, (socklen_t *)&clen) == -1) {
         fprintf(stderr, "Error receiving udp pkt from server, errno = %d (%s) \n",
@@ -99,7 +102,7 @@ int main(int argc, char *argv[])
         close(sockfd);
         return -1;
     }
-
+    printf("pasword %d", rspHdr.cmd);
     if (rspHdr.cmd == 4) {
         printf("Password was accepted wait for data \n");
     } else {

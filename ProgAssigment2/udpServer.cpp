@@ -8,6 +8,8 @@
 #include <netinet/in.h>
 #include <time.h>
 #include <unistd.h>
+#include <arpa/inet.h>
+
 
 typedef struct {
     unsigned short cmd;
@@ -68,27 +70,27 @@ int main(int argc, char *argv[])
     while (1) {
         /* Waiting for a join request from a client */
         slen = sizeof(caddr);
-        if (recvfrom(sockfd, (void *)&reqHdr, sizeof(SCS_HDR), 0, (struct sockaddr *)&caddr, &slen) == -1) {
-            fprintf(stderr, "%s: error on recvfrom, errno = %d (%s) \n", argv[0],
-                    errno, strerror(errno));
-            continue;
-        }
-
-        rspHdr.cmd = 2;
-        rspHdr.pldlen = 0;
-
-        /* Send password response to client */
-        if (sendto(sockfd, (void *)&rspHdr, sizeof(SCS_HDR), 0, (struct sockaddr *)&caddr, slen) == -1) {
-            fprintf(stderr, "Error sending to client, errno = %d (%s) \n",
-            errno, strerror(errno));
-        }
-
-        /* Wait for password response */
         if (recvfrom(sockfd, (void *)&scsRsp, sizeof(SCS_RSP), 0, (struct sockaddr *)&caddr, &slen) == -1) {
             fprintf(stderr, "%s: error on recvfrom, errno = %d (%s) \n", argv[0],
                     errno, strerror(errno));
             continue;
         }
+        printf("Join %s \n",scsRsp.passwd);
+        //rspHdr.cmd = 2;
+        //rspHdr.pldlen = 0;
+
+        /* Send password response to client */
+        /*if (sendto(sockfd, (void *)&rspHdr, sizeof(SCS_HDR), 0, (struct sockaddr *)&caddr, slen) == -1) {
+            fprintf(stderr, "Error sending to client, errno = %d (%s) \n",
+            errno, strerror(errno));
+        }*/
+
+        /* Wait for password response */
+        /*if (recvfrom(sockfd, (void *)&scsRsp, sizeof(SCS_RSP), 0, (struct sockaddr *)&caddr, &slen) == -1) {
+            fprintf(stderr, "%s: error on recvfrom, errno = %d (%s) \n", argv[0],
+                    errno, strerror(errno));
+            continue;
+        }*/
 
         /* Set to password rejected then overwrite if a match */
         rspHdr.cmd = 7;
