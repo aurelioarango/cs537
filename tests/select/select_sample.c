@@ -4,6 +4,13 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
+#include <sys/socket.h>
+#include <errno.h>
+
+#include <netinet/in.h>
+#include <netdb.h>
+#include <stdlib.h>
+
 int inputTimeout (int filedes, unsigned int seconds)
 {
 
@@ -15,6 +22,7 @@ int inputTimeout (int filedes, unsigned int seconds)
   FD_SET (filedes, &set);
 
   //need to change to socket_fd
+
 
   /* Initialize the timeout data structure. */
   timeout.tv_sec = seconds;
@@ -29,19 +37,20 @@ int inputTimeout (int filedes, unsigned int seconds)
 int main (int argc, char *argv[])
 {
 
-  int timeout = 0;
-
-  if (argc != 2) {
+  int timeout = 5;
+  int socket_fd;
+/*  if (argc != 2) {
       fprintf(stderr, "Usage: %s <timeout (secs)>\n", argv[0]);
       return -1;
-  }
+  }*/
+  socket_fd=socket(AF_INET, SOCK_DGRAM, 0);
 
-  timeout = atoi(argv[1]);
+  //timeout = atoi(argv[1]);
 
   fprintf (stderr, "select returned %d.\n",
-           inputTimeout (STDIN_FILENO, timeout));
+           inputTimeout (socket_fd, timeout));
 
-  fflush(STDIN_FILENO);
+  //fflush(STDIN_FILENO);
 
   return 0;
 }

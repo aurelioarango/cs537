@@ -32,7 +32,7 @@ int rdt_sendto(int socket_descriptor,
   int ck_sum =cksum((unsigned char *)buffer,strlen(buffer));
   packet_t.seqno = 0;
   packet_t.ackno = 0;
-  unsigned int len = buffer_length;
+  //unsigned int len = buffer_length;
   //cout << buffer << " len " <<len << " "<<buffer_length <<endl;
   //Break data into packets and send it over UDP use a foorloop to keep sending the data.
   /* while ( len > sizeof(packet_t.data) )

@@ -35,9 +35,9 @@ void check_args(int argc)
 void check_serv_args(int argc)
 {
 
-  if(argc != 2)
+  if(argc < 2 || argc > 3 )
   {
-    cout << "Usage: <port>"<<endl;
+    cout << "Usage: <port> <Optional flags= d | D | a>"<<endl;
     exit(0);
   }
 

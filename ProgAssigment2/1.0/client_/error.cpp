@@ -25,9 +25,9 @@ int error(const char * format,...)
 void check_args(int argc)
 {
 
-  if(argc != 4)
+  if(argc != 3)
   {
-    cout << "Usage: <ip_address> <port> <data> "<<endl;
+    cout << "Usage: <ip_address> <port> "<<endl;
     exit(0);
   }
 

@@ -10,6 +10,7 @@ using namespace std;
 //use error handling
 extern int error(const char * format,...);
 extern unsigned short cksum(unsigned char *addr, int nbytes);
+extern int input_timeout (int filedes, unsigned int seconds );
 
 struct packet {
         uint16_t cksum; /* Ack and Data */
@@ -29,54 +30,75 @@ int rdt_sendto(int socket_descriptor,
               int address_length){
 
   packet packet_t;
-  int ck_sum =cksum((unsigned char *)buffer,strlen(buffer));
-  packet_t.seqno = 0;
-  packet_t.ackno = 0;
-  unsigned int len = buffer_length;
-  //cout << buffer << " len " <<len << " "<<buffer_length <<endl;
-  //Break data into packets and send it over UDP use a foorloop to keep sending the data.
-  /* while ( len > sizeof(packet_t.data) )
-   {
-
-     packet_t.len = sizeof(packet_t.data);
-     packet_t.cksum =ck_sum;
-     //copy message into packet.data and use packet size
-     memcpy ( packet_t.data, buffer, sizeof(packet_t.data) );
-     //traverse the data message
-     //packet_l.seqno++;
-     //packet_l.ackno++;
-     //increate the pointer by the size of data copy from it
-     buffer += sizeof(packet_t.data);
-     len -= sizeof(packet_t.data);
-
-
-     //send the data
-     if (sendto(socket_descriptor, (void *)& packet_t, sizeof(packet_t), flags, (struct sockaddr *)&destination_address, address_length) == -1) {
-          error("Error sending to client, errno \n");
-         return -1;
-     }
-     packet_t.seqno++;
-     packet_t.ackno++;
-   }*/
-   //send the last bit of data
-   //packet_l.seqno++;
-   //packet_l.ackno++;
+  packet ack_t;
+  int total_sum =cksum((unsigned char *)buffer,strlen(buffer));
+  int unsigned seq_no = 1;
+  packet_t.seqno = 1;
+  packet_t.ackno = 1;
+  int unsigned offset =0;
+  int result =0;
+  unsigned int timeout =3;
+  int again =0;
+  cout << "buffer len "<<strlen (buffer) << endl;
+  cout << "buffer size " << sizeof(buffer) <<endl;
+  //cout << buffer << endl;
+  packet_t.len = total_sum;
+  while(offset < strlen(buffer) )
+  {
+    do
+    {
+      //memset(packet_t.data, 0, sizeof(packet_t));
+      //packet_t.len = sizeof(packet_t.data);
+      //cout << "len "<< len<<"size of " << " "<< sizeof(packet_t)<<" " << packet_t.data <<" " <<buffer<<endl;
+      packet_t.cksum=0;//reset cksum
 
 
-   //memset(packet_t.data, 0, sizeof(packet_t));
-   packet_t.len = sizeof(packet_t.data);
-   //cout << "len "<< len<<"size of " << " "<< sizeof(packet_t)<<" " << packet_t.data <<" " <<buffer<<endl;
-   packet_t.cksum =ck_sum;
-   memcpy ( packet_t.data, buffer, strlen(buffer)+1 );
-   int result =0;
-   result = sendto(socket_descriptor, (void *)&  packet_t, sizeof(packet_t), flags, destination_address, address_length);
-   //cout << "Result "<<result<<endl;
-   if (  result ==-1) {
-      perror("Error Sending ");
-       //error("Error sending to client\n", errno);
-      // printf("Error no %d %s  \n",errno ,strerror(errno) );
-       return -1;
-   }
+
+      //break into chunks
+      memset (packet_t.data, 0, 500);
+      memcpy ( packet_t.data, buffer+offset, 500 );
+
+      packet_t.cksum =cksum((unsigned char *)packet_t.data,strlen(packet_t.data));
+      cout <<"\npacket_t cksum "<< packet_t.cksum <<endl<<endl;
+      result = sendto(socket_descriptor, (void *)&  packet_t, sizeof(packet_t), flags, destination_address, address_length);
+      //cout << "Result "<<result<<endl;
+      if ( result ==-1) {
+       perror("Error Sending PACKET ");
+        return -1;
+      }
+      cout << packet_t.data << endl;
+      //wait for ack and time it for 3 seconds
+      again =input_timeout(socket_descriptor, timeout);
+      //if there is no response resend packet
+      cout << "\nagain " <<again <<endl<<endl;
+
+      if(again == 1)
+      {
+        result = recvfrom(socket_descriptor, (void *)&ack_t, sizeof(ack_t), flags,
+        destination_address,(socklen_t *) &address_length);
+      }
+
+
+    }while(again==0);
+
+
+    if ( result ==-1) {
+     perror("Error Getting ACK ");
+      return -1;
+    }
+    cout <<"ACK " << ack_t.ackno << " seq_no " << seq_no <<endl;
+    if(ack_t.ackno ==  seq_no+1)
+    {
+      seq_no++;//increase sequence
+      //increase offset
+      offset +=500;
+      packet_t.seqno++;
+    }
+    cout << "Offset " << offset <<" seq_no " << seq_no <<endl;
+
+  }
+
+  //cout <<" \ntotal cksum "<< total_sum<< "  "<<  ack_t.cksum<< endl;
 
    return result;
 

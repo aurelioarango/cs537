@@ -21,6 +21,6 @@ int rdt_bind(int socket_descriptor, const struct sockaddr * local_address,
       close(socket_descriptor);
       return -1;
   }
-  cout << "Bind result " <<result <<endl;
+  //cout << "Bind result " <<result <<endl;
   return socket_descriptor;
 }

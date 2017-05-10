@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 
 using namespace std;
@@ -41,7 +42,7 @@ extern void check_server(struct hostent * server);
 
 int main(int argc, char *argv[])
 {
-  char data[500];//to get the data
+  char data[12000];//to get the data
   char * port;//port number
   char * ip;//ip address
   int socket_udt;
@@ -59,46 +60,33 @@ int main(int argc, char *argv[])
   //get data
   //data = argv[3];
   //set everything to 0
-  memset(data, 0, sizeof(data));
+  //********************** read file data******************************************
+  std::ifstream in("Down_the_rabbit_hole.txt");
+  std::string file_data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char> ());
+
+
   //copy the data
-  memcpy(data,argv[3],strlen(argv[3])+1);
-  //get host name
-  //server = gethostbyname(argv[1]);
-  //check if server name is not empty
-  //check_server(server);
 
+  memcpy(data,file_data.c_str(), strlen(file_data.c_str()));
 
+//cout << file_data << endl;
   memset((void *)&ser_addr, 0, sizeof(ser_addr));
   ser_addr.sin_family = AF_INET;
   ser_addr.sin_addr.s_addr = inet_addr(ip);
   ser_addr.sin_port = htons(atoi(port));
   //cout <<"family " <<ser_addr.sin_family  <<endl;
-  //cout << ser_addr.sin_port << endl;
-  /* Send dummy command to server to get time
-   * so server knows who to send time */
-  //reqHdr.cmd = 1;
-  //reqHdr.pldlen = 0;
 
-
-/*  bzero((char *) & ser_addr, sizeof(ser_addr) );
-  serv_addr.sin_family = AF_INET;
-
-  bcopy( (char *) server->h_addr,
-         (char *)&ser_addr.sin_addr.s_addr,
-          server->h_length );
-  //get port number
-  port = atoi(argv[2]);
-
-  serv_addr.sin_port = htons(port);*/
   //memset (data, 0, sizeof(data));
   socket_udt = rdt_socket(AF_INET, SOCK_DGRAM, 0);
   //bind to port
   //bind = rdt_bind(socket_udt, )
   //cout << "size of data client "<< data <<endl;
+  //rdt_sendto(socket_udt, file_data.c_str(), sizeof(file_data.c_str()),0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
   rdt_sendto(socket_udt, data, sizeof(data),0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
+
   //int ser_size = sizeof(ser_addr);
   //rdt_recv(socket_udt,data,sizeof(data),0,(struct sockaddr *) &ser_addr,sizeof(ser_addr));
   //closing socket
-  cout << data << endl;
+  cout << data  <<endl;
   rdt_close(socket_udt);
 }

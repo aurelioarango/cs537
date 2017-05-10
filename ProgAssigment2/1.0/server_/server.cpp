@@ -30,7 +30,8 @@ extern int rdt_recv(int socket_descriptor,
              int buffer_length,
              int flags,
              struct sockaddr *from_address,
-             int address_length);
+             int address_length,
+             char *d_flag);
 //rdt close
 extern int rdt_close(int fildes);
 //validate arguments
@@ -42,8 +43,9 @@ extern  void check_server(struct hostent * server);
 
 int main(int argc, char *argv[])
 {
-  char data[1000];//to get the data
+  char data[12000];//to get the data
   char * port;//port number
+  char * flag;
   //char * ip;//ip address
   int socket_udt;
   //int bind;
@@ -56,6 +58,16 @@ int main(int argc, char *argv[])
   //ip = argv[1];
   //port
   port = argv[1];
+  if(argc ==3)
+  {
+    flag = argv[2];
+    cout << "flag "<<flag << endl;
+  }
+  else
+  {
+    flag = NULL;
+  }
+
 
   //get host name
 
@@ -63,7 +75,7 @@ int main(int argc, char *argv[])
   //from_address
   //check if server name is not empty
   //check_server(server);
-  cout <<"port " <<port << endl;
+  //cout <<"port " <<port << endl;
   socket_udt = rdt_socket(AF_INET, SOCK_DGRAM, 0);
 
   //set data to 0
@@ -80,10 +92,13 @@ int main(int argc, char *argv[])
   /* Waiting for a join request from a client */
   {
     rdt_recv(socket_udt,data,sizeof(data),
-      0,(struct sockaddr *) &ser_addr, sizeof(ser_addr));
+      0,(struct sockaddr *) &ser_addr, sizeof(ser_addr),flag );
 
       //rdt_sendto(socket_udt, data, sizeof(data),
       //0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
+    cout <<"TOTAL DATA: "<< data << endl;
+    cout << "\n\nDONE!!! "<<endl;
+    memset (data, 0, 12000);
   }
 
 
