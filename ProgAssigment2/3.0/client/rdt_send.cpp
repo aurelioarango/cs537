@@ -11,6 +11,7 @@ using namespace std;
 extern int error(const char * format,...);
 extern unsigned short cksum(unsigned char *addr, int nbytes);
 extern int input_timeout (int filedes, unsigned int seconds );
+extern int rdt_close(int fildes);
 
 struct packet {
         uint16_t cksum; /* Ack and Data */
@@ -39,6 +40,7 @@ int rdt_sendto(int socket_descriptor,
   int result =0;
   unsigned int timeout =3;
   int again =0;
+  int run_out=0;
   cout << "buffer len "<<strlen (buffer) << endl;
   cout << "buffer size " << sizeof(buffer) <<endl;
   //cout << buffer << endl;
@@ -77,7 +79,11 @@ int rdt_sendto(int socket_descriptor,
         result = recvfrom(socket_descriptor, (void *)&ack_t, sizeof(ack_t), flags,
         destination_address,(socklen_t *) &address_length);
       }
-
+      if(run_out==3){
+        rdt_close(socket_descriptor);
+        return -1;
+      }
+      run_out++;
 
     }while(again==0);
 
@@ -95,7 +101,7 @@ int rdt_sendto(int socket_descriptor,
       packet_t.seqno++;
     }
     cout << "Offset " << offset <<" seq_no " << seq_no <<endl;
-
+    run_out=0;
   }
 
   //cout <<" \ntotal cksum "<< total_sum<< "  "<<  ack_t.cksum<< endl;

@@ -82,11 +82,18 @@ int main(int argc, char *argv[])
   //bind = rdt_bind(socket_udt, )
   //cout << "size of data client "<< data <<endl;
   //rdt_sendto(socket_udt, file_data.c_str(), sizeof(file_data.c_str()),0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
-  rdt_sendto(socket_udt, data, sizeof(data),0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
-
+  int result =rdt_sendto(socket_udt, data, sizeof(data),0, (struct sockaddr *) &ser_addr ,sizeof(ser_addr));
+  if(result = -1)
+  {
+    cout <<"Timed out" <<endl;
+  }
+  else
+  {
+      cout << data  <<endl;
+  }
   //int ser_size = sizeof(ser_addr);
   //rdt_recv(socket_udt,data,sizeof(data),0,(struct sockaddr *) &ser_addr,sizeof(ser_addr));
   //closing socket
-  cout << data  <<endl;
+
   rdt_close(socket_udt);
 }
