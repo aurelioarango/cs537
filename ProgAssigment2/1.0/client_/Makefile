@@ -17,7 +17,7 @@ SRC = cksum.cpp error.cpp rdt_bind.cpp rdt_close.cpp rdt_recv.cpp rdt_send.cpp r
 all : $(PROG)
 
 $(PROG) : $(BLIB)
-	$(CC) $(CFLAGS) -o $(PROG) $(LDFLAGS) $(LIBNAME)
+	$(CC) $(CFLAGS) -o $(PROG) $(LDFLAGS) $(LIBNAME) #build client.a with LibCient.a
 #$(PROG): $(OBJ)
 #	$(CC) -c $(CFLAGS) $(SRC)
 #	$(CC) $(CFLAGS) -o $(PROG) $(OBJ) $(LDFLAGS) $(LIB)
@@ -25,9 +25,12 @@ $(PROG) : $(BLIB)
 clean:
 	rm -f *.o *.a $(PROG)
 
+#funtion to build the library with the name libClient.a
 $(BLIB): $(LIBNAME)
-
+#build tibClient. a with the objects
 $(LIBNAME): $(OBJ)
+	#compiel the source into objects
 	$(CC) -c $(CFLAGS) $(SRC)
 	#$(CC) $(CFLAGS) -o $(PROG) $(OBJ) $(LDFLAGS) $(LIB)
+	#build the library with the objects
 	ar crv $(LIBNAME) $(OBJ)
